@@ -1,0 +1,156 @@
+#!/usr/bin/python
+import re
+import os
+import sys
+import setup
+import socket
+import subprocess
+import time
+setup.pre_install()
+
+from charmhelpers.core import hookenv
+from charmhelpers.core import host
+
+def configure_cassandra(cshosts, ip):
+    # fill the cassandra.yaml
+    f = open("/etc/cassandra/cassandra.yaml", "w")
+    f.write("cluster_name: 'midonet'\n")
+    f.write("seed_provider:\n")
+    add_str = "    - class_name: "
+    add_str = add_str+"org.apache.cassandra.locator.SimpleSeedProvider"
+    f.write("%s\n" % add_str)
+    f.write("      parameters:\n")
+    add_str = "          - seeds: %s" % cshosts
+    f.write("%s\n" % add_str)
+    f.write("listen_address: %s\n" % ip)
+    f.write("rpc_address: %s\n" % ip)
+    f.write("num_tokens: 256\n")
+    f.write("hinted_handoff_enabled: true\n")
+    f.write("max_hint_window_in_ms: 10800000 # 3 hours\n")
+    f.write("hinted_handoff_throttle_in_kb: 1024\n")
+    f.write("max_hints_delivery_threads: 2\n")
+    f.write("batchlog_replay_throttle_in_kb: 1024\n")
+    f.write("authenticator: AllowAllAuthenticator\n")
+    f.write("authorizer: AllowAllAuthorizer\n")
+    f.write("permissions_validity_in_ms: 2000\n")
+    f.write("partitioner: org.apache.cassandra.dht.Murmur3Partitioner\n")
+    f.write("data_file_directories:\n")
+    f.write("    - /var/lib/cassandra/data\n")
+    f.write("commitlog_directory: /var/lib/cassandra/commitlog\n")
+    f.write("disk_failure_policy: stop\n")
+    f.write("commit_failure_policy: stop\n")
+    f.write("key_cache_size_in_mb:\n")
+    f.write("key_cache_save_period: 14400\n")
+    f.write("\n")
+    f.write("row_cache_size_in_mb: 0\n")
+    f.write("row_cache_save_period: 0\n")
+    # counter_cache_size_in_mb:
+    # counter_cache_save_period: 7200
+    f.write("saved_caches_directory: /var/lib/cassandra/saved_caches\n\n")
+    f.write("commitlog_sync: periodic\n")
+    f.write("commitlog_sync_period_in_ms: 10000\n")
+    f.write("commitlog_segment_size_in_mb: 32\n")
+
+    f.write("concurrent_reads: 32\n")
+    f.write("concurrent_writes: 32\n")
+    # concurrent_counter_writes: 32
+    # memtable_allocation_type: heap_buffers
+    # index_summary_capacity_in_mb:
+    # index_summary_resize_interval_in_minutes: 60
+    f.write("trickle_fsync: false\n")
+    f.write("trickle_fsync_interval_in_kb: 10240\n")
+    f.write("storage_port: 7000\n")
+    f.write("ssl_storage_port: 7001\n")
+    f.write("start_native_transport: true\n")
+    f.write("native_transport_port: 9042\n")
+    f.write("start_rpc: true\n")
+    f.write("rpc_port: 9160\n")
+    f.write("rpc_keepalive: true\n")
+    f.write("rpc_server_type: sync\n")
+    f.write("thrift_framed_transport_size_in_mb: 15\n")
+    f.write("incremental_backups: false\n")
+    f.write("snapshot_before_compaction: false\n")
+    f.write("auto_snapshot: true\n")
+    f.write("tombstone_warn_threshold: 1000\n")
+    f.write("tombstone_failure_threshold: 100000\n")
+    f.write("column_index_size_in_kb: 64\n")
+    f.write("batch_size_warn_threshold_in_kb: 5\n")
+    f.write("compaction_throughput_mb_per_sec: 16\n")
+    f.write("# sstable_preemptive_open_interval_in_mb: 50\n")
+    f.write("read_request_timeout_in_ms: 5000\n")
+    f.write("range_request_timeout_in_ms: 10000\n")
+    f.write("write_request_timeout_in_ms: 2000\n")
+    f.write("# counter_write_request_timeout_in_ms: 5000\n")
+    f.write("cas_contention_timeout_in_ms: 1000\n")
+    f.write("truncate_request_timeout_in_ms: 60000\n")
+    f.write("request_timeout_in_ms: 10000\n")
+    f.write("cross_node_timeout: false\n")
+
+    f.write("endpoint_snitch: SimpleSnitch\n")
+
+    f.write("dynamic_snitch_update_interval_in_ms: 100\n")
+    f.write("dynamic_snitch_reset_interval_in_ms: 600000\n")
+    f.write("dynamic_snitch_badness_threshold: 0.1\n")
+
+    f.write("request_scheduler: org.apache.cassandra.scheduler.NoScheduler\n")
+
+    f.write("server_encryption_options:\n")
+    f.write("    internode_encryption: none\n")
+    f.write("    keystore: conf/.keystore\n")
+    f.write("    keystore_password: cassandra\n")
+    f.write("    truststore: conf/.truststore\n")
+    f.write("    truststore_password: cassandra\n")
+
+    f.write("client_encryption_options:\n")
+    f.write("    enabled: false\n")
+    f.write("    keystore: conf/.keystore\n")
+    f.write("    keystore_password: cassandra\n")
+
+    f.write("internode_compression: all\n")
+    f.write("inter_dc_tcp_nodelay: false\n")
+    f.close()
+
+def install_cassandra():
+    config = hookenv.config()
+    host_name =  subprocess.check_output("hostname", shell=True)
+    host_ip = socket.gethostbyname(host_name.strip())
+    cshosts = []
+    hostips = config['cassandra_hosts']
+    ips = list(hostips.split(' '))
+    for ip in ips:
+        cshosts.append("%s" %str(ip))
+        
+    # install cassandra=2.0.10
+    instal_cas = "sudo apt-get install -y cassandra=2.0.10"
+    subprocess.check_output(instal_cas, shell=True)
+
+    #install dsc20=2.0.10-1
+    instal_dsc = "sudo apt-get install -y dsc20=2.0.10-1"
+    subprocess.check_output(instal_dsc, shell=True)
+
+    configure_cassandra(cshosts, host_ip)
+    
+    start_cmd = "sudo service cassandra start || sudo service cassandra restart"    
+    subprocess.check_output(start_cmd, shell=True)
+
+    time.sleep(10) 
+    
+    cmd = "echo $(grep 'disk_failure_policy is stop' /var/log/cassandra/system.log)"
+    op = subprocess.check_output(cmd, shell=True)
+    if not op.strip() == "":
+        cmd = "sudo service cassandra stop"
+        subprocess.check_output(cmd, shell=True)
+        cmd = "sudo rm -rfv /var/lib/cassandra/*"
+        subprocess.check_output(cmd, shell=True)
+        cmd = "sudo rm -v /var/log/cassandra/system.log"
+        subprocess.check_output(cmd, shell=True)
+        cmd  = "sudo service cassandra start"
+        subprocess.check_output(cmd, shell=True)
+     
+def install():
+    hookenv.log('Installing midonet-cassandra')
+    install_cassandra()
+
+
+if __name__ == "__main__":
+    install()

@@ -1,0 +1,5 @@
+options:
+  cassandra_hosts:
+    type: string
+    default: "127.0.0.1"
+    description: "IP's of the cassandra servers with one space  e.g 'a.a.a.a b.b.b.b'"
