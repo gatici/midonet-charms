@@ -1,0 +1,20 @@
+name: midonet-repository
+summary: charm for midonet repositories on ubuntu
+maintainer: midokura
+description: |
+   This charm will configure the basic pre-requites to download the midonet packages
+   for ubuntu. sets the repositories aprropriately and install the puppet as pre-install software
+tags:
+  # Replace "misc" with one or more whitelisted tags from this list:
+  # https://juju.ubuntu.com/docs/authors-charm-metadata.html#charm-metadata
+  - misc
+subordinate: false
+provides:
+  provides-relation:
+    interface: interface-name
+requires:
+  requires-relation:
+    interface: interface-name
+peers:
+  peer-relation:
+    interface: interface-name
