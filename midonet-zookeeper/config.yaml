@@ -1,0 +1,18 @@
+options:
+  debug:
+    type: string
+    default: "True"
+    description: "enable debug"
+  midonet_puppet_modules:
+    type: string
+    default: "https://github.com/midonet/orizuru.git"
+    description: "Repository for zoo-keeper"
+  midonet_puppet_modules_branch:
+    type: string
+    default: master 
+    description: "Branch on Repository"
+  zookeeper_hosts:
+    type: string
+    default: "127.0.0.1"
+    description: "IP's of the zoo-keeper servers with one space e.g 'a.a.a.a b.b.b.b'"
+
