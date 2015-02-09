@@ -1,0 +1,38 @@
+ options:
+  debug:
+    type: string
+    default: "True"
+    description: "enable debug"
+  midonet_puppet_modules:
+    type: string
+    default: "https://github.com/midonet/orizuru.git"
+    description: "Repository for midonet"
+  midonet_puppet_modules_branch:
+    type: string
+    default: "master"
+    description: "Branch on Repository"
+  zookeeper_hosts:
+    type: string
+    default: "127.0.0.1"
+    description: "IP's of the zoo-keeper servers with one space  e.g 'a.a.a.a b.b.b.b'"
+  cassandra_hosts:
+    type: string
+    default: "127.0.0.1"
+    description: "IP's of the cassandra servers with one space  e.g 'a.a.a.a b.b.b.b'"
+  openstack_release:
+    type: string
+    default: "juno" 
+    description: "openstack Release version"
+  max_heap_size:
+    type: int
+    default: 512 
+    description: "heap maximum size value"
+  heap_newsize:
+    type: int
+    default: 100 
+    description: "heap new size value"
+  heap_initial:
+    type: int
+    default: 200 
+    description: "heap initial size value"
+

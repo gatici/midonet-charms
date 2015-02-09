@@ -1,0 +1,85 @@
+#!/usr/bin/python
+import re
+
+import os
+import sys
+import setup
+import shutil
+import socket
+import subprocess
+
+
+setup.pre_install()
+
+from charmhelpers.core import hookenv
+from charmhelpers.core import host
+
+def node_puppet_create(p_mod, m_api_oip):
+    host_name = subprocess.check_output(["hostname"])
+    host_name = host_name.strip()
+    fd = open("node.pp","w")
+    url = "http://%s:8080" % m_api_oip 
+    node_def = """
+node %s {\n
+    %s::install {"%s":\n
+    }\n
+    ->\n
+    %s::configure {"%s":\n
+        rest_api_base => "%s"\n
+    }\n
+    ->\n
+    %s::start {"%s":\n
+    }\n
+}
+""" %(host_name,
+      p_mod,
+      host_name,
+      p_mod,
+      host_name,
+      url,
+      p_mod,
+      host_name)
+    fd.write("%s" % node_def)
+    fd.close()
+
+def install_midonet_manager():
+    config = hookenv.config()
+    zkhosts = []
+    # create temporary directory midonet
+    os.makedirs("/tmp/midonet", 0755)
+    os.chdir("/tmp/midonet")
+    # construct the ensemble string
+    host_name =  subprocess.check_output("hostname", shell=True)
+    host_ip = socket.gethostbyname(host_name.strip())
+    medo_api_ip = config['midonet_api_ip']
+    medo_api_oip = config['midonet_api_outer_ip']
+    puppet_module = "midonet_manager"
+    if config['midonet_repo'] == "MEM":
+        if config['midonet_mem_version'] == "1.8":
+            puppet_module = "midonet_manager18"
+    # create node.pp for puppet
+    node_puppet_create(puppet_module,
+                                   medo_api_oip) 
+    repo = config['midonet_puppet_modules']
+    branch = config['midonet_puppet_modules_branch']
+    git_cmd = "sudo git clone %s --branch %s" %(repo, branch)
+    subprocess.check_output(git_cmd, shell=True)
+
+    cmd = "sudo apt-get update --fix-missing"
+    subprocess.check_output(cmd, shell=True)
+ 
+    MODULEPATH = os.getcwd()+'/orizuru/puppet/modules'
+    PUPPET_NODE_DEFINITION = os.getcwd()+'/node.pp'
+    command = "sudo puppet apply --verbose --debug --show_diff --modulepath=%s %s" %(MODULEPATH, PUPPET_NODE_DEFINITION)
+    output = subprocess.check_output(command, shell=True)
+    os.chdir("/tmp")
+    # delete temporary directory midonet
+    shutil.rmtree("midonet")
+
+def install():
+    hookenv.log('Installing midonet-manager')
+    install_midonet_manager()
+
+
+if __name__ == "__main__":
+    install()

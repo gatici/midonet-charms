@@ -1,0 +1,29 @@
+options:
+  debug:
+    type: string
+    default: "True"
+    description: "enable debug"
+  midonet_puppet_modules:
+    type: string
+    default: "https://github.com/midonet/orizuru.git"
+    description: "Repository for zoo-keeper"
+  midonet_repo:
+    type: string
+    default: "MEM" 
+    description: "Repository for midonet"
+  midonet_puppet_modules_branch:
+    type: string
+    default: "master" 
+    description: "Branch on Repository"
+  midonet_api_ip:
+    type: string
+    default: "127.0.0.1" 
+    description: "Midonet API IP"
+  midonet_api_outer_ip:
+    type: string
+    default: "127.0.0.1" 
+    description: "Midonet API IP"
+  midonet_mem_version:
+    type: string
+    default: "1.8"
+    description: "Medonet repo MEM version"

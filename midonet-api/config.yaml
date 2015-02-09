@@ -1,0 +1,30 @@
+options:
+  debug:
+    type: string
+    default: "True"
+    description: "enable debug"
+  midonet_puppet_modules:
+    type: string
+    default: "https://github.com/midonet/orizuru.git"
+    description: "Repository for midonet"
+  midonet_puppet_modules_branch:
+    type: string
+    default: "master" 
+    description: "Branch on Repository"
+  keystone_ip:
+    type: string
+    default: "127.0.0.1" 
+    description: "Keystone server IP address"
+  midonet_api_ip:
+    type: string
+    default: "127.0.0.1" 
+    description: "Midonet API IP"
+  midonet_api_outer_ip:
+    type: string
+    default: "127.0.0.1" 
+    description: "Midonet API IP"
+  zookeeper_hosts:
+    type: string
+    default: "127.0.0.1"
+    description: "IP's of the zoo-keeper servers with one space  e.g 'a.a.a.a b.b.b.b'"
+
