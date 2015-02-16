@@ -13,9 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+#!/usr/bin/python
 
+from midonet_agent import install_midonet_agent
 from charmhelpers.core import hookenv
 
+from charmhelpers.core.hookenv import (
+    Hooks,
+    config,
+    relation_get,
+    relation_ids,
+    relation_set,
+    related_units,
+    unit_get,
+)
 
-def log_start(service_name):
-    hookenv.log('midonet-agent starting')
+def relation_changed():
+    hookenv.log('zookeeeper relation changed with midonet-agent')
+    config = hookenv.config()
+    zookeeper_hosts = relation_get('zookeeper_hosts')
+    config['zookeeper_hosts'] = zookeeper_hosts 
+    if config['cassandra_hosts'] == "None":
+        print "RELATION TO CASSANDRA SERVER IS MISSING\n"
+        return
+    install_midonet_agent()
+    
+if __name__ == "__main__":
+    relation_changed()

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 #!/usr/bin/python
 import re
 import os
@@ -23,8 +22,6 @@ import shutil
 import socket
 import subprocess
 import time
-
-setup.pre_install()
 
 from charmhelpers.core import hookenv
 from charmhelpers.core import host
@@ -152,11 +149,4 @@ done\n
     cmd = cmd + "grep '/etc/midolman/midolman.conf'"
     output = subprocess.check_output(cmd, shell=True)
  
-    
 
-def install():
-    hookenv.log('Installing midonet-agent')
-    install_midonet_agent()
-
-if __name__ == "__main__":
-    install()
