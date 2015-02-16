@@ -1,20 +1,30 @@
+#
+# Copyright (c) 2015 Midokura SARL, All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 name: midonet-zookeeper
 summary: juju charm for midonet-zookeeper
 maintainer: Midokura
 description: |
-  This will install the hadoop-zookeeper for midonet 
-  and starts running after configuring 
+  This will install the hadoop-zookeeper for midonet.
+  And is used to store the critical path about the virtual and
+  physical network topology.
+  Installed using the midokura puppet modules
 tags:
-  # Replace "misc" with one or more whitelisted tags from this list:
-  # https://juju.ubuntu.com/docs/authors-charm-metadata.html#charm-metadata
-  - misc
+  - database
 subordinate: false
 provides:
-  provides-relation:
-    interface: interface-name
-requires:
-  requires-relation:
-    interface: interface-name
-peers:
-  peer-relation:
-    interface: interface-name
+  zookeeper:
+    interface: zookeeper-server

@@ -23,6 +23,9 @@ Before deploying the midonet-cassandra make sure you already deployed
 midonet-repository juju charm in order to all the neccessary repositories
 for ubuntu.
 
+Provides the cassandra-relation-joined hook to set the ip's cassandra servers
+for dependency charms.
+
 Usage
 =====
     juju deploy midonet-cassandra

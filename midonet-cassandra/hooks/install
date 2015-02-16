@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 #!/usr/bin/python
+
 import re
 import os
 import sys
@@ -166,7 +166,6 @@ def install_cassandra():
 def install():
     hookenv.log('Installing midonet-cassandra')
     install_cassandra()
-
 
 if __name__ == "__main__":
     install()
