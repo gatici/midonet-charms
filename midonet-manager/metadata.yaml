@@ -17,7 +17,10 @@ name: midonet-manager
 summary: juju charm for midonet-manager
 maintainer: Midokura
 description: |
-  This charm installs the midonet-manager
+  MidoNet Manager provides a single pane of glass view of all the bridges,
+  routers, tenants, tunnel zones being managed by MidoNet and the agents.
+  Performing inter-tenant maintenance and making changes to the
+  routing tables can be done easily with the intuitive user interface
 tags:
   - midonet
 subordinate: false
