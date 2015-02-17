@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 # Copyright (c) 2015 Midokura SARL, All Rights Reserved.
 #
@@ -13,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-#!/usr/bin/python
 import re
 import os
 import sys
@@ -23,12 +23,21 @@ import socket
 import subprocess
 
 from charmhelpers.core import hookenv
-from charmhelpers.core import host
+
+from charmhelpers.core.hookenv import (
+    Hooks,
+    config,
+    relation_get,
+    relation_ids,
+    relation_set,
+    related_units,
+    unit_get,
+)
 
 def node_puppet_create(k_ip, m_api_oip, adm_tkn, zkhosts):
     host_name = subprocess.check_output(["hostname"])
     host_name = host_name.strip()
-    url = "http://%s:8080/midonet-api" % m_api_oip 
+    url = "http://%s:8080/midonet-api" % m_api_oip
     fd = open("node.pp","w")
     node_def = """
 node %s {\n
@@ -57,8 +66,7 @@ node %s {\n
     fd.write("%s" %node_def)
     fd.close()
 
-
-def install_midonet_api():
+def config_zkhosts_midonet_api(zkhost_ips):
     config = hookenv.config()
     zkhosts = []
     os.makedirs("/tmp/midonet", 0755)
@@ -66,7 +74,7 @@ def install_midonet_api():
     host_name =  subprocess.check_output("hostname", shell=True)
     host_ip = socket.gethostbyname(host_name.strip())
     # list the zookeeper server ips
-    hostips = config['zookeeper_hosts']
+    hostips = zkhost_ips
     ips = list(hostips.split(' '))
     for ip in sorted(ips):
         zkhosts.append("%s" %str(ip))
@@ -80,15 +88,12 @@ def install_midonet_api():
                        admin_token,
                        zkhosts)
 
-    #cmd = "ps axufww | grep -v grep | grep ^tomcat | "
-    #cmd = cmd+"awk '{print $2;}' | xargs -n1 kill -9"
-
     cmd = """
 ps axufww | grep -v grep | grep ^tomcat | "\
 cmd = cmd+"awk '{print $2;}' | xargs -n1 kill -9"""
 
     subprocess.call(cmd, shell=True)
-    
+
     repo = config['midonet_puppet_modules']
     branch = config['midonet_puppet_modules_branch']
     git_cmd = "sudo git clone %s --branch %s" %(repo, branch)
@@ -100,10 +105,19 @@ cmd = cmd+"awk '{print $2;}' | xargs -n1 kill -9"""
     output = subprocess.check_output(command, shell=True)
     os.chdir("/tmp")
     shutil.rmtree("midonet")
-    
-def install():
-    hookenv.log('Installing midonet-api')
-    #install_midonet_api()
-   
+
+def relation_changed():
+    hookenv.log('midonet-api relation  changed with midonet-agent')
+    config = hookenv.config()
+    print "ZOO_SERVERE =%s\n" % config['zookeeper_hosts']
+    print "in ZOO-SERVER RELATION-CHANGED HOOK\n"
+    zookeeper_hosts = relation_get('zookeeper_hosts')
+    print "ZOOKP HOST in RELATIONCHANGED = %s\n" % zookeeper_hosts
+    config['zookeeper_hosts'] = zookeeper_hosts
+    print "ZOO_SERVER after RELATION-CHANGED =%s\n" % config['zookeeper_hosts']
+    if zookeeper_hosts:
+        config_zkhosts_midonet_api(zookeeper_hosts)
+
 if __name__ == "__main__":
-    install()
+    relation_changed()
+

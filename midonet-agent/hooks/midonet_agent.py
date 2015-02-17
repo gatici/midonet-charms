@@ -26,6 +26,106 @@ import time
 from charmhelpers.core import hookenv
 from charmhelpers.core import host
 
+def zkconfig_puppet_node(zks):
+    host_name = subprocess.check_output(["hostname"])
+    host_name = host_name.strip()
+    fd = open("node.pp","w")
+    node_def = """
+node %s {\n
+    midolman::configure {"%s":\n
+        zookeepers => "%s"\n
+    }\n
+    ->\n
+    midolman::start {"%s":\n
+    }\n
+}\n
+""" %(host_name,
+      host_name,
+      zks,
+      host_name)
+    fd.write("%s" % node_def)
+    fd.close()
+
+def config_zkhosts_midonet_agent(zkhosts):
+    zookeepers = []
+    config = hookenv.config()
+    # create temparoty directory midonet
+    os.makedirs("/tmp/midonet", 0755)
+    os.chdir("/tmp/midonet")
+    host_name =  subprocess.check_output("hostname", shell=True)
+    # make list of zookeeeper server ips
+    hostips = zkhosts
+    ips = list(hostips.split(' '))
+    for ip in sorted(ips):
+        zookeepers.append("%s" %str(ip))
+    node_path = zkconfig_puppet_node(zookeepers)
+
+    repo = config['midonet_puppet_modules']
+    branch = config['midonet_puppet_modules_branch']
+    git_cmd = "sudo git clone %s --branch %s" %(repo, branch)
+    subprocess.check_output(git_cmd, shell=True)
+    MODULEPATH = os.getcwd()+'/orizuru/puppet/modules'
+    PUPPET_NODE_DEFINITION = os.getcwd()+'/node.pp'
+    # execute the puppet apply command
+    print "BEfore puppet apply XXXXXXXXXXXXX"
+    command = "sudo puppet apply --verbose --show_diff --modulepath=%s %s" %(MODULEPATH, PUPPET_NODE_DEFINITION)
+    output = subprocess.call(command, shell=True)
+    time.sleep(10)
+    os.chdir("/tmp")
+    # deletetemparoty directory midonet
+    shutil.rmtree("midonet")
+
+def csconfig_puppet_node(css):
+    host_name = subprocess.check_output(["hostname"])
+    host_name = host_name.strip()
+    fd = open("node.pp","w")
+    node_def = """
+node %s {\n
+    midolman::configure {"%s":\n
+        cassandras => "%s"\n
+    }\n
+    ->\n
+    midolman::start {"%s":\n
+    }\n
+}\n
+""" %(host_name,
+      host_name,
+      css,
+      host_name)
+    fd.write("%s" % node_def)
+    fd.close()
+
+def config_cshosts_midonet_agent(cshosts):
+    cassandras = []
+    config = hookenv.config()
+    # create temparoty directory midonet
+    os.makedirs("/tmp/midonet", 0755)
+    os.chdir("/tmp/midonet")
+    host_name =  subprocess.check_output("hostname", shell=True)
+    host_ip = socket.gethostbyname(host_name.strip())
+    # make list of zookeeeper server ips
+    hostips = cshosts
+    ips = list(hostips.split(' '))
+    for ip in sorted(ips):
+        cassandras.append("%s" %str(ip))
+    node_path = csconfig_puppet_node(cassandras)
+
+    repo = config['midonet_puppet_modules']
+    branch = config['midonet_puppet_modules_branch']
+    git_cmd = "sudo git clone %s --branch %s" %(repo, branch)
+    subprocess.check_output(git_cmd, shell=True)
+    MODULEPATH = os.getcwd()+'/orizuru/puppet/modules'
+    PUPPET_NODE_DEFINITION = os.getcwd()+'/node.pp'
+    # execute the puppet apply command
+    print "BEfore puppet apply ZZZZZZZZZZZ"
+    command = "sudo puppet apply --verbose --show_diff --modulepath=%s %s" %(MODULEPATH, PUPPET_NODE_DEFINITION)
+    output = subprocess.call(command, shell=True)
+    time.sleep(10)
+    os.chdir("/tmp")
+    # deletetemparoty directory midonet
+    shutil.rmtree("midonet")
+
+
 def create_puppet_node(zks, cass, os_ver, max_h, new_h):
     host_name = subprocess.check_output(["hostname"])
     host_name = host_name.strip()

@@ -15,26 +15,25 @@
 # limitations under the License.
 #
 
-from midonet_agent import config_cshosts_midonet_agent
+import setup
+
 from charmhelpers.core import hookenv
 
 from charmhelpers.core.hookenv import (
     Hooks,
     config,
+    log,
+    local_unit,
     relation_get,
-    relation_ids,
     relation_set,
-    related_units,
     unit_get,
 )
 
-def relation_changed():
-    hookenv.log('zookeeeper relation changed with midonet-agent')
+def relation_joined():
     config = hookenv.config()
-    cassandra_hosts = relation_get('cassandra_hosts')
-    config['cassandra_hosts'] = cassandra_hosts 
-    if cassandra_hosts:
-        config_cshosts_midonet_agent(cassandra_hosts)    
-    
+    log('relation joined midonet-zookeeper')
+    relation_set(zookeeper_hosts=config['zookeeper_hosts'])
+
 if __name__ == "__main__":
-    relation_changed()
+    relation_joined()
+

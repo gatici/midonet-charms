@@ -15,7 +15,7 @@
 #
 #!/usr/bin/python
 
-from midonet_agent import install_midonet_agent
+from midonet_agent config_zkhosts_midonet_agent
 from charmhelpers.core import hookenv
 
 from charmhelpers.core.hookenv import (
@@ -33,10 +33,8 @@ def relation_changed():
     config = hookenv.config()
     zookeeper_hosts = relation_get('zookeeper_hosts')
     config['zookeeper_hosts'] = zookeeper_hosts 
-    if config['cassandra_hosts'] == "None":
-        print "RELATION TO CASSANDRA SERVER IS MISSING\n"
-        return
-    install_midonet_agent()
+    if zookeeper_hosts:
+        config_zkhosts_midonet_agent(zookeeper_hosts)    
     
 if __name__ == "__main__":
     relation_changed()
