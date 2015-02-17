@@ -21,7 +21,7 @@ options:
   midonet_puppet_modules:
     type: string
     default: "https://github.com/midonet/orizuru.git"
-    description: "Repository for zoo-keeper"
+    description: "Repository for midonet"
   midonet_puppet_modules_branch:
     type: string
     default: "master" 
