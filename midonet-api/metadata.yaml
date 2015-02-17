@@ -28,6 +28,6 @@ provides:
   midonet-api:
     interface: midonet
 requires:
-  zookeeper:
-    interface: zookeeper-server
+  zks_ips:
+    interface: midonet-api
 
