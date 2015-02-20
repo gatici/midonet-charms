@@ -182,13 +182,18 @@ def neutron_plugins():
         }
     }
     if release >= 'icehouse':
-        # NOTE: patch in ml2 plugin for icehouse onwards
-        plugins['ovs']['config'] = '/etc/neutron/plugins/ml2/ml2_conf.ini'
-        plugins['ovs']['driver'] = 'neutron.plugins.ml2.plugin.Ml2Plugin'
-        plugins['ovs']['server_packages'] = ['neutron-server',
-                                             'neutron-plugin-ml2']
-        # NOTE: patch in vmware renames nvp->nsx for icehouse onwards
-        plugins['nvp'] = plugins['nsx']
+        if (config('neutron-plugin') == "midonet"):
+            plugins['midonet']['config'] = '/etc/neutron/plugins/midonet/midonet.ini'
+            plugins['midonet']['driver'] = 'midonet.neutron.plugin.MidonetPluginV2'
+            plugins['midonet']['server_packages'] = ['neutron-server']
+        else: 
+            # NOTE: patch in ml2 plugin for icehouse onwards
+            plugins['ovs']['config'] = '/etc/neutron/plugins/ml2/ml2_conf.ini'
+            plugins['ovs']['driver'] = 'neutron.plugins.ml2.plugin.Ml2Plugin'
+            plugins['ovs']['server_packages'] = ['neutron-server',
+                                                 'neutron-plugin-ml2']
+            # NOTE: patch in vmware renames nvp->nsx for icehouse onwards
+            plugins['nvp'] = plugins['nsx']
     return plugins
 
 
