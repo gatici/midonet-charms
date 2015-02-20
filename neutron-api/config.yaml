@@ -49,13 +49,14 @@ options:
     default: ext_net
     description: Name of the external network for floating IP addresses provided by Neutron.
   neutron-plugin:
-    default: ovs
+    default: midonet
     type: string
     description: |
       Neutron plugin to use for network management; supports
       .
         ovs - OpenvSwitch Plugin
         nsx - VMWare NSX
+        midonet - Midonet-agent Plugin
       .
   overlay-network-type:
     default: gre
