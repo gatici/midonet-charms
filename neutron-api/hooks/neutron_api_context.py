@@ -90,6 +90,12 @@ class NeutronCCContext(context.NeutronContext):
                     ','.join(config('nsx-controllers').split())
                 ctxt['nsx_controllers_list'] = \
                     config('nsx-controllers').split()
+        if config('neutron-plugin') == 'midonet':
+            ctxt['username'] = config('midonet-username')
+            ctxt['password'] = config('midonet-password')
+            ctxt['project_id'] = config('midonet-projectid')
+            ctxt['midonet_uri'] = "http://%s:8080/midonet-api" \
+                % config('controller-ip')
         ctxt['l2_population'] = self.neutron_l2_population
         ctxt['overlay_network_type'] = self.neutron_overlay_network_type
         ctxt['external_network'] = config('neutron-external-network')

@@ -272,6 +272,14 @@ def neutron_plugin_api_relation_joined(rid=None):
             'nsx-l3-uuid': config('nsx-l3-uuid'),
             'nsx-controllers': config('nsx-controllers'),
         }
+    elif config('neutron-plugin') == 'midonet':
+        relation_data = {
+            'midonet_uri': "http://%s:8080/midonet-api" \
+                 % config('controller-ip'),
+            'username': config('midonet-username'),
+            'password': config('midonet-password'),
+            'project_id': config('midonet-projectid')
+        }
     else:
         relation_data = {
             'neutron-security-groups': config('neutron-security-groups'),

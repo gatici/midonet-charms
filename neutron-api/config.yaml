@@ -1,6 +1,6 @@
 options:
   openstack-origin:
-    default: distro
+    default: cloud:trusty-juno
     type: string
     description: |
       Repository from which to install.  May be one of the following:
@@ -56,7 +56,7 @@ options:
       .
         ovs - OpenvSwitch Plugin
         nsx - VMWare NSX
-        midonet - Midonet-agent Plugin
+        midonet - Midokura MidoNet
       .
   overlay-network-type:
     default: gre
@@ -204,6 +204,25 @@ options:
     description: |
       This is uuid of the default NSX L3 Gateway Service.
   # end of NSX configuration
+  # midonet-plugin configuration
+  controller-ip:
+    type: string
+    default: "192.168.8.84"
+    description: Space delimited addresses of controller
+  midonet-username:
+    type: string
+    default: midonet
+    description: Username for  midonet-agent
+  midonet-password:
+    type: string
+    default: password
+    description: Password for  midonet-agent
+  midonet-projectid:
+    type: string
+    default: admin
+    description: |
+      This is midonet administrative user's tenant.
+  # end of midonet-plugin configuration
   nagios_context:
     default: "juju"
     type: string

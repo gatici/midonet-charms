@@ -179,21 +179,35 @@ def neutron_plugins():
                           'nova-api-metadata']],
             'server_packages': ['neutron-server', 'calico-control'],
             'server_services': ['neutron-server']
+        },
+
+        'midonet': {
+            'config': '/etc/neutron/plugins/midonet/midonet.ini',
+            'driver': 'midonet.neutron.plugin.MidonetPluginV2',
+            'contexts': [
+                context.SharedDBContext(user=config('neutron-database-user'),
+                                        database=config('neutron-database'),
+                                        relation_prefix='neutron',
+                                        ssl_dir=NEUTRON_CONF_DIR)],
+            'services': ['midolman'],
+            'packages': [[headers_package()] + determine_dkms_package(),
+                         ['python-midonetclient', 'midolman']],
+            'server_packages': ['neutron-server',
+                                'python-midonetclient',
+                                'python-neutron-plugin-midonet'],
+            'server_services': ['neutron-server', 'midolman']
         }
     }
+
     if release >= 'icehouse':
-        if (config('neutron-plugin') == "midonet"):
-            plugins['midonet']['config'] = '/etc/neutron/plugins/midonet/midonet.ini'
-            plugins['midonet']['driver'] = 'midonet.neutron.plugin.MidonetPluginV2'
-            plugins['midonet']['server_packages'] = ['neutron-server']
-        else: 
-            # NOTE: patch in ml2 plugin for icehouse onwards
-            plugins['ovs']['config'] = '/etc/neutron/plugins/ml2/ml2_conf.ini'
-            plugins['ovs']['driver'] = 'neutron.plugins.ml2.plugin.Ml2Plugin'
-            plugins['ovs']['server_packages'] = ['neutron-server',
+        # NOTE: patch in ml2 plugin for icehouse onwards
+        plugins['ovs']['config'] = '/etc/neutron/plugins/ml2/ml2_conf.ini'
+        plugins['ovs']['driver'] = 'neutron.plugins.ml2.plugin.Ml2Plugin'
+        plugins['ovs']['server_packages'] = ['neutron-server',
                                                  'neutron-plugin-ml2']
-            # NOTE: patch in vmware renames nvp->nsx for icehouse onwards
-            plugins['nvp'] = plugins['nsx']
+        # NOTE: patch in vmware renames nvp->nsx for icehouse onwards
+        plugins['nvp'] = plugins['nsx']
+
     return plugins
 
 
