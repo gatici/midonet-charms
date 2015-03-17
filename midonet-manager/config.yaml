@@ -22,15 +22,15 @@ options:
     type: string
     default: "https://github.com/midonet/orizuru.git"
     description: "Repository for midonet"
- midonet_puppet_modules_branch:
+  midonet_puppet_modules_branch:
     type: string
     default: "master" 
     description: "Branch on Repository"
   midonet_api_ip:
     type: string
-    default: "127.0.0.1" 
+    default: "192.168.8.84" 
     description: "Midonet API IP"
   midonet_api_outer_ip:
     type: string
-    default: "127.0.0.1" 
+    default: "192.168.8.84"
     description: "Midonet API IP"

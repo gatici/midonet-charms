@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from charmhelpers.core import hookenv
 
+from charmhelpers.core import hookenv
 
 def log_start(service_name):
     hookenv.log('midonet-manager starting')
