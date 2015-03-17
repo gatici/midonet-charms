@@ -40,14 +40,13 @@ options:
     description: "openstack Release version"
   max_heap_size:
     type: int
-    default: 512 
+    default: 2400 
     description: "heap maximum size value"
   heap_newsize:
     type: int
-    default: 100 
+    default: 1600 
     description: "heap new size value"
   heap_initial:
     type: int
-    default: 200 
+    default: 1024 
     description: "heap initial size value"
-

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Copyright (c) 2015 Midokura SARL, All Rights Reserved.
 #
@@ -13,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-#!/usr/bin/env python
+
 import sys
 import mock
 import unittest

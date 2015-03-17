@@ -16,32 +16,16 @@ limitations under the License.
 Overview
 ========
 
-This charm provides midonet-agent along with open jdk7.
-Midonet-agent designed work with openvswitch kernal version 1.10.2 or later
-Requires specify the zookeeper and casssandra IP addresses in the 
-midolman configuration file 
-
-Before deploying the midonet-cassandra make sure you already deployed
-midonet-repository juju charm in order to all the neccessary repositories
-for ubuntu.
-
-Requires the zookeeper and cassandra relations
+This charm will install the midonet java agent. All installed agents
+work as the distributed flow simulator. Each agent requires access to
+the zookeeper and cassandra servers. Topology information and host NIC 
+bindings are stored in zookeeper. Cassandra can be used as a secondary 
+storage for L4 and NAT state.
 
 Usage
 =====
+    juju deploy midonet-zookeeper
+    juju deploy midnet-cassandra
     juju deploy midonet-agent
     juju add-relation midonet-agent midonet-zookeeper
     juju add-relation midonet-agent midonet-cassandra
-
-   
-
-Note:
-=====
-    Please makesure that you already installed the zookeeeper and
-    cassandra using below 
-    juju deploy midonet-zookeeper
-    juju deploy midonet-cassandra
-
-    if you didnt deploy midonet-repositoy please run the below
-    juju deploy midonet-repository
- 

@@ -14,19 +14,30 @@
 # limitations under the License.
 #
 name: midonet-agent
+subordinate: true
 summary: juju charm for midonet-agent
-maintainer: Midokura
+maintainer: Midokura SarL
 description: |
-  This charm will install the midonet-agent and used to controll the traffic in midocloud.
-  It requires the zookeeper and cassandra server ip's.
+  This charm will install the midonet java agent.
+  All installed agents work as the distributed flow simulator.
+  Each agent requires access to the zookeeper and cassandra servers.
+  Topology information and host NIC bindings are stored in zookeeper.
+  Cassandra can be used as a secondary storage for L4 and NAT state.
 tags:
   - midonet
-subordinate: false
 provides:
   midonet-agent:
-    interface: midonet
+    interface: midonet-agent
+  neutron-plugin:
+    interface: neutron-plugin
+    scope: container
 requires:
-  zookeeper:
-    interface: zookeeper-server
-  cassandra:
-    interface: cassandra-server
+  midonet-zookeeper:
+    interface: midonet-agent
+  midonet-cassandra:
+    interface: midonet-cassandra
+  neutron-plugin-api:
+    interface: neutron-plugin-api
+  container:
+    interface: juju-info
+    scope: container

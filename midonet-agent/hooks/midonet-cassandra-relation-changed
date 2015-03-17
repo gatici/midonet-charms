@@ -1,0 +1,160 @@
+#!/usr/bin/python
+#
+# Copyright (c) 2015 Midokura SARL, All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import re
+import os
+import sys
+import setup
+import shutil
+import socket
+import subprocess
+import tempfile
+import time
+
+from configobj import ConfigObj
+from charmhelpers.core import hookenv
+
+from charmhelpers.core.hookenv import (
+    Hooks,
+    config,
+    relation_get,
+    relation_ids,
+    relation_set,
+    related_units,
+    unit_get,
+)
+
+def create_puppet_node_manifest(zkhosts, cahosts):
+    """
+    Creates and returns the puppet node manifest as a string.
+    """
+    zookeepers = []
+    cassandras = [] 
+    host_name = subprocess.check_output("hostname", shell=True)
+    host_name = host_name.strip()
+    host_ip = socket.gethostbyname(host_name.strip())
+    # make list of zookeeeper server ips
+    config = hookenv.config()
+    hostips = zkhosts
+    ips = list(hostips.split(' '))
+    for ip in sorted(ips):
+        zookeepers.append("%s" %str(ip))
+    hostips = cahosts
+    ips = list(hostips.split(' '))
+    # make a list of cassandra servers ips
+    for ip in sorted(ips):
+        cassandras.append("%s" %str(ip))
+
+    return """
+
+node "%s" {
+    midolman::install {"%s":
+        openstack_version => "%s"
+    }
+    ->
+    midolman::configure {"%s":
+        zookeepers => "%s",
+        cassandras => "%s",
+        max_heap_size => "%dM",
+        heap_newsize => "%dM"
+    }
+    ->
+    midolman::start {"%s":
+    }
+}
+""" % ( host_name,
+        host_name,
+        config['openstack_release'],
+        host_name,
+        ",".join(zookeepers),
+        ",".join(cassandras),
+        config['max_heap_size'],
+        config['heap_newsize'],
+        host_name
+      )
+
+def run_puppet_node_manifest(manifest, modules, branch):
+    """
+    Run the manifest with the modules from github and a certain branch.
+    """
+
+    temp = tempfile.NamedTemporaryFile()
+
+    temp.write(manifest)
+
+    temp.seek(0)
+    
+    try:
+        subprocess.check_output("""
+
+set -e
+
+NODE_MANIFEST="%s"
+
+PUPPET_MODULE_URL="%s"
+
+PUPPET_MODULE_BRANCH="%s"
+
+TMPDIR="/tmp/midonet-charms/$(mktemp -d -u)"
+
+mkdir -pv "${TMPDIR}"
+
+cd "${TMPDIR}"
+
+git clone "${PUPPET_MODULE_URL}" --branch "${PUPPET_MODULE_BRANCH}"
+
+cd "${TMPDIR}/orizuru/puppet/modules"
+
+puppet apply --verbose --debug --show_diff --modulepath=$(pwd) "${NODE_MANIFEST}"
+
+cd
+
+rm -rfv "${TMPDIR}"
+
+sync
+
+""" % (temp.name, modules, branch), shell=True)
+    except subprocess.CalledProcessError:
+        hookenv.log('Error applying the puppet module')
+        sys.exit(1)
+
+    temp.close()
+
+    return
+
+def puppet_config_apply(zkhosts, cahosts):
+
+    config = hookenv.config()
+    
+    manifest = create_puppet_node_manifest(zkhosts, cahosts)
+
+    time.sleep(30)
+
+    run_puppet_node_manifest(manifest, config['midonet_puppet_modules'], config['midonet_puppet_modules_branch'])
+
+
+def relation_changed():
+    hookenv.log('relation changed with cassandra')
+    config = hookenv.config()
+    cassandra_hosts = relation_get('cassandra_hosts')
+    config['cassandra_hosts'] = cassandra_hosts 
+    if cassandra_hosts:
+        zcfg = ConfigObj("zoo.cfg")
+        zks_ips = zcfg['zookeeper_hosts'] 
+        puppet_config_apply(zks_ips, cassandra_hosts)   
+if __name__ == "__main__":
+    relation_changed()
