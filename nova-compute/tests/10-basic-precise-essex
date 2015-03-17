@@ -1,0 +1,9 @@
+#!/usr/bin/python
+
+"""Amulet tests on a basic nova compute deployment on precise-essex."""
+
+from basic_deployment import NovaBasicDeployment
+
+if __name__ == '__main__':
+    deployment = NovaBasicDeployment(series='precise')
+    deployment.run_tests()

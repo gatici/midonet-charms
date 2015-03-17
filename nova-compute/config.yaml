@@ -1,0 +1,184 @@
+options:
+  openstack-origin:
+    default: distro
+    type: string
+    description: |
+      Repository from which to install.  May be one of the following:
+      distro (default), ppa:somecustom/ppa, a deb url sources entry,
+      or a supported Cloud Archive release pocket.
+
+      Supported Cloud Archive sources include: cloud:precise-folsom,
+      cloud:precise-folsom/updates, cloud:precise-folsom/staging,
+      cloud:precise-folsom/proposed.
+
+      Note that updating this setting to a source that is known to
+      provide a later version of OpenStack will trigger a software
+      upgrade.
+  nova-config:
+    default: /etc/nova/nova.conf
+    type: string
+    description: Full path to nova.conf
+  rabbit-user:
+    default: nova
+    type: string
+    description: Username used to access rabbitmq queue
+  rabbit-vhost:
+    default: openstack
+    type: string
+    description: Rabbitmq vhost
+  use-syslog:
+    type: boolean
+    default: False
+    description: |
+      By default, all services will log into their corresponding log files.
+      Setting this to True will force all services to log to the syslog.
+  database-user:
+    default: nova
+    type: string
+    description: Username for database access
+  database:
+    default: nova
+    type: string
+    description: Database name
+  neutron-database-user:
+    default: neutron
+    type: string
+    description: Username for Neutron database access (if enabled)
+  neutron-database:
+    default: neutron
+    type: string
+    description: Database name for Neutron (if enabled)
+  virt-type:
+    default: kvm
+    type: string
+    description: "Virtualization flavor. Supported: kvm, xen, uml, lxc. qemu"
+  multi-host:
+    default: "yes"
+    type: string
+    description: Whether to run nova-api and nova-network on the compute nodes.
+  disk-cachemodes:
+    default:
+    type: string
+    description: |
+      Specific cachemodes to use for different disk types e.g:
+      file=directsync,block=none
+  enable-resize:
+    default: False
+    type: boolean
+    description: Enable instance resizing, which requires that passwordless SSH
+      access be setup between compute hosts.
+  enable-live-migration:
+    default: False
+    type: boolean
+    description: Configure libvirt for live migration.
+  migration-auth-type:
+    type: string
+    default:
+    description: |
+      TCP authentication scheme for libvirt live migration.  Available options
+      include ssh.
+  authorized-keys-path:
+    default: '{homedir}/.ssh/authorized_keys'
+    type: string
+    description: |
+      Only used when migration-auth-type is set to ssh.
+      Full path to authorized_keys file, can be useful for systems with non default
+      AuthorizedKeysFile location. It will be formatted using the following variables:
+          homedir - user's home directory
+          username - username
+  # needed if using flatmanager
+  bridge-interface:
+    default: br100
+    type: string
+    description: Bridge interface to be configured
+  bridge-ip:
+    default: 11.0.0.1
+    type: string
+    description: IP to be assigned to bridge interface
+  bridge-netmask:
+    default: 255.255.255.0
+    type: string
+    description: Netmask to be assigned to bridge interface
+  # needed if using flatdhcpmanager
+  flat-interface:
+    default: eth1
+    type: string
+    description: Network interface on which to build bridge
+  instances-path:
+    type: string
+    default:
+    description: Instance path to use - empty means default of /var/lib/nova/instances
+  config-flags:
+    type: string
+    default:
+    description: Comma separated list of key=value config flags to be set in nova.conf.
+  nagios_context:
+    default: "juju"
+    type: string
+    description: |
+      Used by the nrpe-external-master subordinate charm.
+      A string that will be prepended to instance name to set the host name
+      in nagios. So for instance the hostname would be something like:
+          juju-myservice-0
+      If you're running multiple environments with the same services in them
+      this allows you to differentiate between them.
+  disable-neutron-security-groups:
+    type: boolean
+    default:
+    description: |
+      Disable neutron based security groups - setting this configuration option
+      will override any settings configured via the nova-cloud-controller charm.
+      .
+      BE CAREFUL - this option allows you to disable all port level security within
+      and OpenStack cloud.
+  # Network configuration options
+  # by default all access is over 'private-address'
+  os-data-network:
+    type: string
+    default:
+    description: |
+      The IP address and netmask of the OpenStack Data network (e.g.,
+      192.168.0.0/24)
+      .
+      This network will be used for tenant network traffic in overlay
+      networks.
+  prefer-ipv6:
+    type: boolean
+    default: False
+    description: |
+      If True enables IPv6 support. The charm will expect network interfaces
+      to be configured with an IPv6 address. If set to False (default) IPv4
+      is expected.
+      .
+      NOTE: these charms do not currently support IPv6 privacy extension. In
+      order for this charm to function correctly, the privacy extension must be
+      disabled and a non-temporary address must be configured/available on
+      your network interface.
+  libvirt-image-backend:
+    default:
+    type: string
+    description:
+      Tell Nova which libvirt image backend to use. Supported backends are rbd and lvm.
+      If no backend is specified, the Nova default is used (probably qcow2).
+  rbd-pool:
+    default: "nova"
+    type: string
+    description: |
+      RBD pool to use with Nova RBD image backend. Required when
+      libvirt_image_backend is rbd.
+  ceph-osd-replication-count:
+    default: 3
+    type: int
+    description: |
+      This value dictates the number of replicas ceph must make of any
+      object it stores withing the nova rbd pool. Of course, this only
+      applies if using Ceph as a backend store. Note that once the nova
+      rbd pool has been created, changing this value will not have any
+      effect (although it can be changed in ceph by manually configuring
+      your ceph cluster).
+  sysctl:
+    type: string
+    default:
+    description: |
+      YAML formatted associative array of sysctl values, e.g.:
+      '{ kernel.pid_max : 4194303 }'
