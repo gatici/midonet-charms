@@ -18,6 +18,10 @@ options:
     type: string
     default: "True"
     description: "enable debug"
+  admin_token:
+    type: string
+    default: "dS3BMbJgrqbKZKKfx7qkPCYwn5F3GBqF2BNnRgJMsSX2RfwNMkBprdkCw44PzVJY"
+    description: "admin token from keystone"
   midonet_puppet_modules:
     type: string
     default: "https://github.com/midonet/orizuru.git"
@@ -28,7 +32,7 @@ options:
     description: "Branch on Repository"
   keystone_ip:
     type: string
-    default: "127.0.0.1" 
+    default: "192.168.8.83" 
     description: "Keystone server IP address"
   midonet_api_ip:
     type: string
@@ -36,10 +40,9 @@ options:
     description: "Midonet API IP"
   midonet_api_outer_ip:
     type: string
-    default: "127.0.0.1" 
+    default: "192.168.8.84" 
     description: "Midonet API IP"
   zookeeper_hosts:
     type: string
     default: "None"
     description: "get the zookeeper ip's from relation-changed"
-

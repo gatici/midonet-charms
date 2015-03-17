@@ -14,20 +14,19 @@
 # limitations under the License.
 #
 name: midonet-api
-summary: juju charm for midonet-api
-maintainer: Midokura
+summary: charm for deploying the midonet-api
+maintainer: Midokura SarL
 description: |
-  The midonet-api provides the integration point between external applications and 
-  the internal midonet configurations. This requires connectivity to the
-  state management servers zookeeper and also use the openstack keystone identity
-  to authenticate.
+  This charm installs the MidoNet API.
 tags:
   - midonet
 subordinate: false
 provides:
   midonet-api:
-    interface: midonet
-requires:
-  zks_ips:
     interface: midonet-api
-
+requires:
+  midonet-zk:
+    interface: midonet-api
+  midonet-repository:
+    interface: midonet-repository
+    scope: container
