@@ -13,20 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 name: midonet-zookeeper
-summary: juju charm for midonet-zookeeper
-maintainer: Midokura
+summary: charm for deploying midonet-zookeeper
+maintainer: Midokura SarL
 description: |
-  This will install the hadoop-zookeeper for midonet.
-  And is used to store the critical path about the virtual and
-  physical network topology.
-  Installed using the midokura puppet modules
+  This will install the hadoop-zookeeper for midonet, which is
+  used to store the critical path about the virtual and
+  physical network topology.  
 tags:
   - database
 subordinate: false
 provides:
-  zookeeper:
-    interface: zookeeper-server
-  zks_ips:
-    interface: midonet-api 
+  midonet-zookeeper:
+    interface: midonet-agent
+  midonet-zk:
+    interface: midonet-api
+requires:
+  midonet-repository:
+    interface: midonet-repository
+    scope: container

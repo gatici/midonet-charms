@@ -13,4 +13,5 @@ This charm installs the midonet-manager software componenet for the midocloud.
 Usage
 =====
 juju deploy midonet-manager
+
 juju add-relation  midonet-manager midonet-repository

@@ -16,7 +16,9 @@ midonet-api requires the midonet-zookeeper service.
 Usage
 =====
 juju deploy midonet-api
+
 juju add-relation midonet-api midonet-repository
+
 juju add-relation midonet-api midonet-zookeeper
 
 

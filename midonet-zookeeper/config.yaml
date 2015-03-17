@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 options:
   debug:
     type: string
@@ -29,6 +28,5 @@ options:
     description: "Branch on Repository"
   zookeeper_hosts:
     type: string
-    default: "127.0.0.1"
+    default: "192.168.8.52 192.168.8.84 192.168.8.54"
     description: "list of zoo-keeper server ip's with one space e.g 'a.a.a.a b.b.b.b'"
-
