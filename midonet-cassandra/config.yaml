@@ -16,5 +16,5 @@
 options:
   cassandra_hosts:
     type: string
-    default: "127.0.0.1 1.1.1.1"
+    default: "192.168.8.52 192.168.8.84 192.168.8.54"
     description: "list of cassandra server ip's  with one space  e.g 'a.a.a.a b.b.b.b'"

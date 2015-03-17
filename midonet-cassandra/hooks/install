@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 # Copyright (c) 2015 Midokura SARL, All Rights Reserved.
 #
@@ -13,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-#!/usr/bin/python
 
 import re
 import os
@@ -26,10 +26,13 @@ import time
 from charmhelpers.core import hookenv
 from charmhelpers.core import host
 
+import charmhelpers.fetch as fetch
+
 def configure_cassandra(cshosts, ip):
     # fill the cassandra.yaml
+    config = hookenv.config()
     f = open("/etc/cassandra/cassandra.yaml", "w")
-    data = """cluster_name: 'midonet'
+    f.write("""cluster_name: 'midonet'
 seed_provider:
     - class_name: org.apache.cassandra.locator.SimpleSeedProvider
       parameters:
@@ -126,8 +129,7 @@ client_encryption_options:
 internode_compression: all
 inter_dc_tcp_nodelay: false
 
-""" %(cshosts,ip,ip)
-    f.write("%s" %data)
+""" %(config['cassandra_hosts'],ip,ip))
     f.close()
 
 
@@ -140,14 +142,30 @@ def install_cassandra():
     ips = list(hostips.split(' '))
     for ip in ips:
         cshosts.append("%s" %str(ip))
-        
+
+    cmd = """
+echo deb http://debian.datastax.com/community stable main\
+| sudo tee -a /etc/apt/sources.list.d/datastax.list
+"""
+    subprocess.check_output(cmd, shell=True)
+
+    cmd = """
+sudo -i |\
+sudo curl -L http://debian.datastax.com/debian/repo_key | \
+sudo apt-key add - | exit
+"""
+    subprocess.check_output(cmd, shell=True)
+     
+    fetch.apt_update(fatal=True)
+
     # install cassandra=2.0.10
-    instal_cas = "sudo apt-get install -y cassandra=2.0.10"
-    subprocess.check_output(instal_cas, shell=True)
+    fetch.apt_install(["openjdk-7-jre-headless"], fatal=True)
+
+    # install cassandra=2.0.10
+    fetch.apt_install(["cassandra=2.0.10"], fatal=True)
 
     #install dsc20=2.0.10-1
-    instal_dsc = "sudo apt-get install -y dsc20=2.0.10-1"
-    subprocess.check_output(instal_dsc, shell=True)
+    fetch.apt_install(["dsc20=2.0.10-1"], fatal=True)
 
     configure_cassandra(cshosts, host_ip)
     

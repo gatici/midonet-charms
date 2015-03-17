@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 # Copyright (c) 2015 Midokura SARL, All Rights Reserved.
 #
@@ -14,21 +15,23 @@
 # limitations under the License.
 #
 
+import subprocess
+
 def pre_install():
     """
     Do any setup required before the install hook.
     """
-    # pre-installations are moved to midonet-repository charm
-    #install_charmhelpers()
-
+    return
 
 def install_charmhelpers():
     """
-    Install the charmhelpers library, if not present.
+    Install the charmhelpers library if not present.
     """
     try:
-        import charmhelpers  # noqa
+        import charmhelpers
     except ImportError:
         import subprocess
         subprocess.check_call(['apt-get', 'install', '-y', 'python-pip'])
         subprocess.check_call(['pip', 'install', 'charmhelpers'])
+
+    return

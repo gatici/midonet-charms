@@ -14,15 +14,14 @@
 # limitations under the License.
 #
 name: midonet-cassandra
-summary: juju charm for midonet-cassandra
-maintainer: Midokura
+summary: charm for deploying midonet-cassandra
+maintainer: Midokura SarL
 description: |
-  Midonet-cassandra is one of the componenet of the midonet-cloud and 
-  used to store the flow state information. Midonet uses cassandra as
-  a back-up rather then data source 
+  This charm installs Apache Cassandra version2.0 which Midonet uses
+  to store flow state information.
 tags:
   - storage
 subordinate: false
 provides:
-  cassandra:
-    interface: cassandra-server
+  midonet-cassandra:
+    interface: midonet-cassandra
