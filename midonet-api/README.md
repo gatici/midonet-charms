@@ -7,12 +7,14 @@ http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 Overview
+========
 This charm installs the MidoNet API. This needs to be installed along side the zookeeper instance or the neutron server instances. Midonet API server can be hosted by the Apcahe Tomcat servlet container.
 The midonet-repository charm should be deployed prior to this charm.
 midonet-api requires the midonet-zookeeper service.
 
 
 Usage
+=====
 juju deploy midonet-api
 juju add-relation midonet-api midonet-repository
 juju add-relation midonet-api midonet-zookeeper

@@ -28,11 +28,11 @@ options:
     description: "Branch on Repository"
   username:
     type: string
-    default: "XXXXX" 
+    default: "XXXXXX" 
     description: "username for midonet repository"
   password:
     type: string
-    default: "XXXXXXX" 
+    default: "XXXXXXXX" 
     description: "password for the midonet repository"
   midonet_flavor:
     type: string
@@ -50,4 +50,3 @@ options:
     type: string
     default: "trusty" 
     description: "ubuntu os release"
-

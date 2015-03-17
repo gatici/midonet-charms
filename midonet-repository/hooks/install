@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 # Copyright (c) 2015 Midokura SARL, All Rights Reserved.
 #
@@ -13,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-#!/usr/bin/python
+
 import re
 import os
 import sys
@@ -21,154 +22,108 @@ import setup
 import shutil
 import socket
 import subprocess
+import tempfile
 
 from charmhelpers.core import hookenv
 from charmhelpers.core import host
 
-# method which creates the node.pp
-def node_puppet_create():
+import charmhelpers.fetch as fetch
+
+def create_puppet_node_manifest():
+    """
+    Creates and returns the puppet node manifest as a string.
+    """
     config = hookenv.config()
-    host_name = subprocess.check_output(["hostname"])
-    host_name = host_name.strip()
-    fd = open("node.pp","w")
-    node_def = """
-node %s {\n
-    midonet_repository::install {"%s":\n
-    }\n
-    ->\n
-    midonet_repository::configure {"%s":\n
-        username => "%s",\n
-        password => "%s",\n
-        midonet_flavor => "%s",\n
-        midonet_version => "%s",\n
-        midonet_openstack_plugin_version => "%s",\n
-        os_release => "%s"\n
-    }\n
+
+    hostname = subprocess.check_output(["hostname"])
+    hostname = hostname.strip() 
+    return """
+
+node "%s" {
+    midonet_repository::install {"%s":
+    }
+    ->
+    midonet_repository::configure {"%s":
+        username => "%s",
+        password => "%s",
+        midonet_flavor => "%s",
+        midonet_version => "%s",
+        midonet_openstack_plugin_version => "%s",
+        os_release => "%s"
+    }
 }
-""" %(host_name, 
-      host_name,
-      host_name,
-      config['username'],
-      config['password'],
-      config['midonet_flavor'],
-      config['midonet_version'],
-      config['midonet_openstack_plugin_version'],
-      config['os_release'])
-    fd.write("%s" %node_def)
-    fd.close()
 
+""" % (
+        hostname,
+        hostname,
+        hostname,
+        config['username'],
+        config['password'],
+        config['midonet_flavor'],
+        config['midonet_version'],
+        config['midonet_openstack_plugin_version'],
+        config['os_release']
+    )
 
+# this could make it into a general-purpose charm helper that will be available for all midonet charms
+def run_puppet_node_manifest(manifest, modules, branch):
+    """
+    Run the manifest with the modules from github and a certain branch.
+    """
 
-def install_midonet_repository():
-    config = hookenv.config()
-    zkhosts = []
-    os.makedirs("/tmp/midonet", 0755)
-    os.chdir("/tmp/midonet")
-    host_name =  subprocess.check_output("hostname", shell=True)
-    host_ip = socket.gethostbyname(host_name.strip())
+    temp = tempfile.NamedTemporaryFile()
+    temp.write(manifest)
+    temp.seek(0)
+    try:
+        subprocess.check_output("""
 
-    # create the node.pp for puppet apply
-    node_path = node_puppet_create()
-  
-    # add the repositories to sources.list & midonet.list
-    cmd = """
-echo deb http://archive.ubuntu.com/ubuntu/ trusty main \
-| sudo tee -a /etc/apt/sources.list
-"""     
-    subprocess.check_output(cmd, shell=True)
+set -e
 
-    cmd = """
-echo deb http://security.ubuntu.com/ubuntu trusty-security main \
-| sudo tee -a /etc/apt/sources.list
-"""
-    subprocess.check_output(cmd, shell=True)
+NODE_MANIFEST="%s"
 
-    cmd = """
-echo deb http://archive.ubuntu.com/ubuntu/ trusty universe \
-| sudo tee -a /etc/apt/sources.list
-"""
-    subprocess.check_output(cmd, shell=True)
-     
-    cmd = """
-echo deb http://security.ubuntu.com/ubuntu trusty-security universe \
-| sudo tee -a /etc/apt/sources.list
-"""
-    subprocess.check_output(cmd, shell=True)
+PUPPET_MODULE_URL="%s"
 
-    cmd = """
-echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno \
-main | sudo tee -a /etc/apt/sources.list.d/cloudarchive-juno.list
-"""
-    subprocess.check_output(cmd, shell=True)
+PUPPET_MODULE_BRANCH="%s"
 
+TMPDIR="/tmp/midonet-charms/$(mktemp -d -u)"
 
-    cmd = """
-echo deb http://debian.datastax.com/community stable main\
-| sudo tee -a /etc/apt/sources.list.d/datastax.list
-"""
-    subprocess.check_output(cmd, shell=True)
+mkdir -pv "${TMPDIR}"
 
-    cmd = """
-sudo -i |\
-sudo curl -L http://debian.datastax.com/debian/repo_key | \
-sudo apt-key add - | exit
-"""
-    subprocess.check_output(cmd, shell=True)
+cd "${TMPDIR}"
 
-    cmd = """
-echo deb http://repo.midonet.org/midonet/v2014.11 stable main \
-| sudo tee -a /etc/apt/sources.list.d/midonet.list
-"""
-    subprocess.check_output(cmd, shell=True)
+git clone "${PUPPET_MODULE_URL}" --branch "${PUPPET_MODULE_BRANCH}"
 
-    cmd = """
-echo deb http://repo.midonet.org/openstack-juno stable main \
-| sudo tee -a /etc/apt/sources.list.d/midonet.list
-"""
-    subprocess.check_output(cmd, shell=True)
+cd "${TMPDIR}/orizuru/puppet/modules"
 
-    cmd = """
-echo deb http://repo.midonet.org/misc stable main \
-| sudo tee -a /etc/apt/sources.list.d/midonet.list
-"""
-    subprocess.check_output(cmd, shell=True)
+puppet apply --verbose --debug --show_diff --modulepath=$(pwd) "${NODE_MANIFEST}"
+
+cd
+
+rm -rfv "${TMPDIR}"
+
+sync
+
+""" % (temp.name, modules, branch), shell=True)
+    except subprocess.CalledProcessError:
+        hookenv.log('Error applying the puppet module')
+        sys.exit(1)
+
+    temp.close()
     
-    cmd = """
-sudo -i | \
-sudo curl -k http://repo.midonet.org/packages.midokura.key \
-| sudo apt-key add - | exit
-"""
-    subprocess.check_output(cmd, shell=True)
-
-    apt_update = "sudo apt-get update"
-    subprocess.check_output(apt_update, shell=True)
-
-    key_cmd = "sudo apt-get install -y ubuntu-cloud-keyring"
-    subprocess.check_output(key_cmd, shell=True)
-    
-    # install the  puppet    
-    cmd_puppet = "sudo apt-get install -y puppet"
-    subprocess.check_output(cmd_puppet, shell=True)
-
-    repo = config['midonet_puppet_modules']
-    branch = config['midonet_puppet_modules_branch']
-    git_cmd = "sudo git clone %s --branch %s" %(repo, branch)
-    subprocess.check_output(git_cmd, shell=True)
-    MODULEPATH = os.getcwd()+'/orizuru/puppet/modules'
-    PUPPET_NODE_DEFINITION = os.getcwd()+'/node.pp'
-    
-    # execute the puppet apply 
-    command = "sudo puppet apply --verbose --debug --show_diff --modulepath=%s %s" %(MODULEPATH, PUPPET_NODE_DEFINITION)
-    output = subprocess.check_output(command, shell=True)
-
-    # delete the /tmp/midonet folder
-    os.chdir("/tmp")
-    shutil.rmtree("midonet")
+    return
 
 def install():
     hookenv.log('Installing midonet-repository')
-    install_midonet_repository()
 
+    fetch.apt_update(fatal=True)
+    fetch.apt_install(["puppet"], fatal=True)
+    fetch.apt_install(["git"], fatal=True)
+
+    config = hookenv.config()
+
+    manifest = create_puppet_node_manifest()
+
+    run_puppet_node_manifest(manifest, config['midonet_puppet_modules'], config['midonet_puppet_modules_branch'])
 
 if __name__ == "__main__":
     install()
